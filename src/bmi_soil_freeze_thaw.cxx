@@ -9,12 +9,16 @@
 #include <vector>
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
+#include "../include/Logger.hpp"
 #include <algorithm>
 
 
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
+  //setup the Logger
+  (Logger::GetInstance())->setup_logger();
+
   if (config_file.compare("") != 0 )
     this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
 
@@ -211,21 +215,21 @@ GetGridType(const int grid)
 void BmiSoilFreezeThaw::
 GetGridX(const int grid, double *x)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridY(const int grid, double *y)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridZ(const int grid, double *z)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
@@ -281,7 +285,7 @@ GetValuePtr (std::string name)
   else {
     std::stringstream errMsg;
     errMsg << "variable "<< name << " does not exist";
-    throw std::runtime_error(errMsg.str());
+    Logger::logMsgAndThrowRuntimeError(errMsg.str());
     return NULL;
   }
 }
@@ -427,42 +431,46 @@ GetTimeStep () {
 int BmiSoilFreezeThaw::
 GetGridEdgeCount(const int grid)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
+
+  return 0;
 }
 
 
 int BmiSoilFreezeThaw::
 GetGridFaceCount(const int grid)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
+
+  return 0;
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridEdgeNodes(const int grid, int *edge_nodes)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridFaceEdges(const int grid, int *face_edges)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridFaceNodes(const int grid, int *face_nodes)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 
 void BmiSoilFreezeThaw::
 GetGridNodesPerFace(const int grid, int *nodes_per_face)
 {
-  throw NotImplemented();
+  Logger::logMsgAndThrowLogicError("Not implemented in SFT");
 }
 
 #endif
