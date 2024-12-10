@@ -20,6 +20,7 @@ enum class LogLevel {
 	FATAL = 5,
 };
 
+#undef NGEN
 enum class LoggingModule {
 	NGEN = 0,
 	NOAHOWP, 
