@@ -10,7 +10,9 @@
 #include <algorithm>
 #include <stdexcept>
 #include "../include/soil_freeze_thaw.hxx"
+#include "../include/Logger.hpp"
 
+std::stringstream sft_ss("");
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw()
@@ -93,7 +95,8 @@ InitFromConfigFile(std::string config_file)
   fp.open(config_file);
 
   if (!fp) {
-    std::cerr<<"File \""<<config_file<<"\"does not exist."<<"\n";
+    sft_ss <<"File \""<<config_file<<"\"does not exist."<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
     abort();
   }
   int n_st, n_mct, n_mcl;
@@ -272,49 +275,60 @@ InitFromConfigFile(std::string config_file)
   }
 
   if (!is_endtime_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("End time not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("End time not set in the config file!");
   }
 
   if (!is_dt_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Time step (dt) not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("Time step (dt) not set in the config file!");
   }
   if (!is_soil_z_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("soil_z not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("soil_z not set in the config file!");
   }
   if (!is_smcmax_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("smcmax not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("smcmax not set in the config file!");
   }
   if (!is_b_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("b (Clapp-Hornberger's parameter) not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("b (Clapp-Hornberger's parameter) not set in the config file!");
   }
   if (!is_quartz_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("quartz (soil parameter) not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("quartz (soil parameter) not set in the config file!");
   }
   if (!is_satpsi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("satpsi not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("satpsi not set in the config file!");
   }
   if (!is_soil_temperature_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Soil temperature not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("Soil temperature not set in the config file!");
   }
   if (!is_soil_moisture_content_set && !this->is_soil_moisture_bmi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Total soil moisture content not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("Total soil moisture content not set in the config file!");
   }
   if (!is_soil_liquid_content_set && !this->is_soil_moisture_bmi_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Liquid soil moisture content not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("Liquid soil moisture content not set in the config file!");
   }
   if (!is_ice_fraction_scheme_set) {
-    std::cout<<"Config file: "<<this->config_file<<"\n";
-    throw std::runtime_error("Ice fraction scheme not set in the config file!");
+    sft_ss <<"Config file: "<<this->config_file<<"\n";
+    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    Logger::logMsgAndThrowRuntimeError("Ice fraction scheme not set in the config file!");
   }
 
   this->option_bottom_boundary = is_bottom_boundary_temp_set == true ? 1 : 2; // if false zero geothermal flux is the BC
@@ -344,7 +358,7 @@ ReadVectorData(std::string key)
     if (v == 0.0) {
       std::stringstream errMsg;
       errMsg << "soil_z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
-      throw std::runtime_error(errMsg.str());
+      Logger::logMsgAndThrowRuntimeError(errMsg.str());
     }
     
     value.push_back(v);
@@ -403,7 +417,7 @@ ComputeIceFraction()
     this->ice_fraction_xinanjiang = fcr;
   }
   else {
-    throw std::runtime_error("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
+    Logger::logMsgAndThrowRuntimeError("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
   }
   
   // compute soil ice fraction (the fraction of soil moisture that is ice)
@@ -471,11 +485,15 @@ Advance()
   ComputeIceFraction();
 
   if (verbosity.compare("high") == 0) {
-    for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
+    for (int i=0;i<ncells;i++) {
+      sft_ss <<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
+      LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    }
 
-    for (int i=0;i<ncells;i++)
-      std::cerr<<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+    for (int i=0;i<ncells;i++) {
+      sft_ss <<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
+      LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    }
   }
 
   EnergyBalanceCheck();
@@ -503,7 +521,7 @@ GroundHeatFlux(double soil_temp)
     surface_temp = this->ground_temp;       // temperature from a file/coupling
   }
   else {
-    throw std::runtime_error("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!");
+    Logger::logMsgAndThrowRuntimeError("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!");
     return 0;
   }
 
@@ -903,19 +921,29 @@ EnergyBalanceCheck()
   this->energy_balance += energy_balance_timestep;
   
   if (verbosity.compare("high") == 0 || fabs(energy_balance) >  tolerance) {
+    char prtMsg[128];
     
-    printf("Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
-    printf("Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
-    printf("Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
-    printf("Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
-    printf("Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
-    printf("Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
-    printf("Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
-    printf("Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
-    printf("Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+    sprintf(prtMsg, "Energy (previous timestep)     [W/m^2] = %6.6f \n", energy_previous);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy (current timestep)      [W/m^2] = %6.6f \n", energy_current);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy gain (+) or loss (-)    [W/m^2] = %6.6f \n", (energy_current - energy_previous));
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Surface flux (in (+), out (-)) [W/m^2] = %6.6f \n", this->ground_heat_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Bottom flux  (in (+), out (-)) [W/m^2] = %6.6f \n", this->bottom_heat_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Netflux (in (+) or out (-))    [W/m^2] = %6.6f \n", net_flux);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy (phase change)          [W/m^2] = %6.6f \n", this->energy_consumed);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy balance error (local)   [W/m^2] = %6.4e \n", energy_balance_timestep);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
+    sprintf(prtMsg,  "Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
+    LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
 
     if (fabs(energy_balance) > tolerance)
-      throw std::runtime_error("Soil energy balance error...");
+      Logger::logMsgAndThrowRuntimeError("Soil energy balance error...");
   }
   
   
