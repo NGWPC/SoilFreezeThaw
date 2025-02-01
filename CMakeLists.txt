@@ -75,7 +75,7 @@ if(PFRAMEWORK)
   target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/cfe/include)
   target_include_directories(${exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/)
 elseif(STANDALONE)
-  add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx)
+  add_executable(${exe_name} ./src/main_standalone.cxx ./src/bmi_soil_freeze_thaw.cxx ./src/soil_freeze_thaw.cxx ./src/Logger.cpp)
 endif()
 
 ##for NGEN BUILD
@@ -87,9 +87,9 @@ set(SFT_LIB_DESC_CMAKE "OWP SFT BMI Module Shared Library")
 add_compile_definitions(BMI_ACTIVE)
 
 if(WIN32)
-    add_library(sftbmi src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx)
+    add_library(sftbmi src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx ./src/Logger.cpp)
 else()
-    add_library(sftbmi SHARED src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx)
+    add_library(sftbmi SHARED src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx ./src/Logger.cpp)
 endif()
 
 target_include_directories(sftbmi PRIVATE include)
