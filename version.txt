@@ -1,3 +1,3 @@
-version=rc-1.0.0
-date=2025-01-26
-commit=d239c7d80132c6f10c8adc4de2a2f4874db90642
+version=1.0.0
+date=2025-01-31
+commit=131157eb31acd692adbac7ee8c5e4fd172f552d2
