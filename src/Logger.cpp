@@ -20,7 +20,7 @@
 const std::string  MODULE_NAME           = "SFT";
 const std::string  LOG_DIR_NGENCERF      = "/ngencerf/data";      // ngenCERF log directory string if environement var empty.
 const std::string  LOG_DIR_DEFAULT       = "run-logs";            // Default parent log directory string if env var empty  & ngencerf dosn't exist
-const std::string  LOG_FILsE_EXT          = "log";                 // Log file name extension
+const std::string  LOG_FILE_EXT          = "log";                 // Log file name extension
 const std::string  DS                    = "/";                   // Directory separator
 const unsigned int LOG_MODULE_NAME_LEN   = 8;                     // Width of module name for log entries
 
