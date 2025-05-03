@@ -96,7 +96,7 @@ InitFromConfigFile(std::string config_file)
 
   if (!fp) {
     sft_ss <<"File \""<<config_file<<"\"does not exist."<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+    LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     abort();
   }
   int n_st, n_mct, n_mcl;
@@ -274,61 +274,63 @@ InitFromConfigFile(std::string config_file)
 
   }
 
+  //std::string errMsg;
+  std::string throwMsg;
   if (!is_endtime_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("End time not set in the config file!");
+    throwMsg = "End time not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
 
   if (!is_dt_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("Time step (dt) not set in the config file!");
+    throwMsg = "Time step (dt) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_z_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("soil_z not set in the config file!");
+    throwMsg = "soil_z not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_smcmax_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("smcmax not set in the config file!");
+    throwMsg = "smcmax not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_b_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("b (Clapp-Hornberger's parameter) not set in the config file!");
+    throwMsg = "b (Clapp-Hornberger's parameter) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_quartz_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("quartz (soil parameter) not set in the config file!");
+    throwMsg = "quartz (soil parameter) not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_satpsi_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("satpsi not set in the config file!");
+    throwMsg = "satpsi not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_temperature_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("Soil temperature not set in the config file!");
+    throwMsg = "Soil temperature not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_moisture_content_set && !this->is_soil_moisture_bmi_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("Total soil moisture content not set in the config file!");
+    throwMsg = "Total soil moisture content not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_soil_liquid_content_set && !this->is_soil_moisture_bmi_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("Liquid soil moisture content not set in the config file!");
+    throwMsg = "Liquid soil moisture content not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
   if (!is_ice_fraction_scheme_set) {
-    sft_ss <<"Config file: "<<this->config_file<<"\n";
-    LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
-    Logger::logMsgAndThrowRuntimeError("Ice fraction scheme not set in the config file!");
+    throwMsg = "Ice fraction scheme not set in the config file!";
+    LOG(LogLevel::WARNING, "Config file: %s.\n%s", this->config_file.c_str(), throwMsg.c_str());
+    throw std::runtime_error(throwMsg);
   }
 
   this->option_bottom_boundary = is_bottom_boundary_temp_set == true ? 1 : 2; // if false zero geothermal flux is the BC
@@ -358,7 +360,8 @@ ReadVectorData(std::string key)
     if (v == 0.0) {
       std::stringstream errMsg;
       errMsg << "soil_z (depth of soil reservior) should be greater than zero. It it set to "<< v << " in the config file "<< "\n";
-      Logger::logMsgAndThrowRuntimeError(errMsg.str());
+      LOG(LogLevel::WARNING, errMsg.str());
+      throw std::runtime_error(errMsg.str());
     }
     
     value.push_back(v);
@@ -417,7 +420,9 @@ ComputeIceFraction()
     this->ice_fraction_xinanjiang = fcr;
   }
   else {
-    Logger::logMsgAndThrowRuntimeError("Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!");
+    std::string errMsg = "Ice Fraction Scheme not specified either in the config file nor set by CFE BMI. Options: Schaake or Xinanjiang!";
+    LOG(LogLevel::WARNING, errMsg);
+    throw std::runtime_error(errMsg);
   }
   
   // compute soil ice fraction (the fraction of soil moisture that is ice)
@@ -487,12 +492,12 @@ Advance()
   if (verbosity.compare("high") == 0) {
     for (int i=0;i<ncells;i++) {
       sft_ss <<"Soil Temp (previous, current) = "<<this->soil_temperature_prev[i]<<", "<<this->soil_temperature[i]<<"\n";
-      LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+      LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     }
 
     for (int i=0;i<ncells;i++) {
       sft_ss <<"Soil moisture (total, water, ice) = "<<this->soil_moisture_content[i]<<", "<<this->soil_liquid_content[i]<<", "<<this->soil_ice_content[i]<<"\n";
-      LOG(sft_ss.str(), LogLevel::ERROR); sft_ss.str("");
+      LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     }
   }
 
@@ -521,7 +526,9 @@ GroundHeatFlux(double soil_temp)
     surface_temp = this->ground_temp;       // temperature from a file/coupling
   }
   else {
-    Logger::logMsgAndThrowRuntimeError("Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!");
+    std::string errMsg = "Ground heat flux: option for top boundary should be 1 (constant temperature) or 2 (temperature from file/coupling)!";
+    LOG(LogLevel::WARNING, errMsg);
+    throw std::runtime_error(errMsg);
     return 0;
   }
 
@@ -942,10 +949,11 @@ EnergyBalanceCheck()
     sprintf(prtMsg,  "Energy lalance error (global)  [W/m^2] = %6.4e \n", energy_balance);
     LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
 
-    if (fabs(energy_balance) > tolerance)
-      Logger::logMsgAndThrowRuntimeError("Soil energy balance error...");
-  }
-  
+    if (fabs(energy_balance) > tolerance) {}
+        std::string errMsg = "Soil energy balance error...";
+        LOG(LogLevel::WARNING, errMsg);
+        throw std::runtime_error(errMsg);
+    }
   
 }
 
