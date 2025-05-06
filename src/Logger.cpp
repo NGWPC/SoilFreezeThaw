@@ -203,26 +203,29 @@ void Logger::SetLogFilePath(void) {
         logFilePath = envVar;
         mdduleLogEnvExists = true;
     } else {
+        // log path not set yet.
         envVar = std::getenv(EV_NGEN_LOGFILEPATH.c_str()); // Currently set by ngen-cal but envision set for WCOSS at some point
         if (envVar != nullptr && envVar[0] != '\0') {
             logFilePath = envVar;
         } else {
+            // ngen log file not defined. Create alternate log file
             appendEntries = false;
-            // Get parent log directory
             std::string logFileDir;
             if (DirectoryExists(LOG_DIR_NGENCERF)) {
                 logFileDir = LOG_DIR_NGENCERF + DS + LOG_DIR_DEFAULT;
             } else {
-                logFileDir = "~" + DS + LOG_DIR_DEFAULT;
+                const char* envHomeDir = std::getenv("HOME");
+                std::string homeDir = (envHomeDir != nullptr && envHomeDir[0] != '\0') ? envHomeDir : "~";
+                logFileDir = homeDir + DS + LOG_DIR_DEFAULT;
             }
 
-            // Ensure parent log direcotry exists
+            // Ensure parent log directory exists
             if (CreateDirectory(logFileDir)) {
-                // Get full log directory path
+                // Set full log directory path
                 const char* envUsername = std::getenv("USER");
-                if (envUsername) {
+                if (envUsername != nullptr && envUsername[0] != '\0') {
                     std::string username = envUsername;
-                    logFileDir           = logFileDir + DS + username;
+                    logFileDir = logFileDir + DS + username;
                 } else {
                     logFileDir = logFileDir + DS + CreateDateString();
                 }
