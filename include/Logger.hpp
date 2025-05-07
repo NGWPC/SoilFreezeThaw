@@ -1,92 +1,66 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <stdlib.h>
-#include <string>
+#include <ctime>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <fstream>
-#include <ctime>
+#include <stdlib.h>
+#include <string>
 
-#define LOG (Logger::GetInstance())->Log
+#define LOG Logger::Log
 
 enum class LogLevel {
-	NONE = 0,
-	DEBUG = 1,
-	INFO = 2,
-	ERROR = 3,
-	WARN = 4,
-	FATAL = 5,
-};
-
-#undef NGEN
-enum class LoggingModule {
-	NGEN = 0,
-	NOAHOWP, 
-	SNOW17, 
-	UEB, 
-	CFE, 
-	SACSMA, 
-	LASAM, 
-	SMP, 
-	SFT, 
-	TROUTE, 
-	SCHISM, 
-	SFINCS, 
-	GC2D, 
-	TOPOFLOW,
-	MODULE_COUNT
+    NONE    = 0,
+    DEBUG   = 1,
+    INFO    = 2,
+    WARNING = 3,
+    SEVERE  = 4,
+    FATAL   = 5,
 };
 
 /**
-* Logger Class Used to Output Details of Current Application Flow
-*/
+ * Logger Class Used to Output Details of Current Application Flow
+   All methods and variables are static so instantiating an object is unnecessary.
+ */
 class Logger {
   public:
-	static std::shared_ptr<Logger> GetInstance();
-	void SetLogPreferences(LogLevel level);
-	void Log(std::string message, LogLevel messageLevel);
-	LogLevel GetLogLevel(const std::string& logLevel);
-	std::string createTimestamp();
-	void setup_logger(void);
-	std::string getLogFilePath();
-	static __always_inline void logMsgAndThrowRuntimeError(const std::string& message) {
-		(Logger::GetInstance())->Log(message, LogLevel::ERROR);
-		throw std::runtime_error(message);
-	};
-	static __always_inline void logMsgAndThrowLogicError(const std::string& message) {
-		(Logger::GetInstance())->Log(message, LogLevel::ERROR);
-		throw std::logic_error(message);
-	};
+    // Methods
+    static void Log(LogLevel messageLevel, const char* message, ...);
+    static void Log(LogLevel messageLevel, std::string message);
+    static void Log(std::string message, LogLevel messageLevel = LogLevel::INFO);
+    static bool IsLoggingEnabled(void);
+    static LogLevel GetLogLevel(void);
 
   private:
-	LogLevel logLevel;
-	std::fstream logFile;
-	static std::shared_ptr<Logger> loggerInstance;
-	std::string logFilePath;
-#if 0
-    std::fstream& _out_stream;
+    // Methods
+    static std::string CreateDateString(void);
+    static std::string CreateTimestamp(bool appendMS = true, bool iso = true);
+    static bool CreateDirectory(const std::string& path);
+    static std::string ConvertLogLevelToString(LogLevel level);
+    static LogLevel ConvertStringToLogLevel(const std::string& logLevel);
+    static bool DirectoryExists(const std::string& path);
+    static std::string GetLogFilePath(void);
+    static bool LogFileReady(bool appendMode=true);
+    static void SetLogFilePath(void);
+    static void SetLoggingFlag(void);
+    static void SetLogLevel(void);
+    static void SetLogModuleName(void);
+    static void SetLogPreferences(void);
+    static std::string ToUpper(const std::string& input);
+    static std::string TrimString(const std::string& str);
 
-    //Constructor: User provides custom output stream, or uses default (std::cout).
-    public: Logger(std::fstream& stream = std::fstream): _out_stream(stream) {} 
+    // Variables
+    // Declaring these static so they exist in the class without needing to instantiate it. 
+    static bool         loggerInitialized;
+    static std::string  logFilePath;
+    static bool         loggingEnabled;
+    static std::fstream logFile;
+    static LogLevel     logLevel;
+    static std::string  moduleName;
 
-    //Implicit conversion to std::ostream
-    operator std::ostream() {
-        return _out_stream;
-    } 
-
-    //Templated operator>> that uses the std::ostream: Everything that has defined 
-    //an operator<< for the std::ostream (Everithing "printable" with std::cout 
-    //and its colleages) can use this function.    
-    template<typename T> 
-    Logger& operator<< (const T& data) 
-    {
-        _out_stream << data;
-    }
-#endif
+    static std::shared_ptr<Logger> loggerInstance;
 };
-
-
 
 #endif
