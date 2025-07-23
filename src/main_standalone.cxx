@@ -155,7 +155,7 @@ int main(int argc, const char *argv[])
   ************************************************************************/
   
   ftm_bmi_model.Finalize();
-  
+  delete [] ice_fraction;
   return 0;
 }
 
