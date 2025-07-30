@@ -92,11 +92,20 @@ else()
     add_library(sftbmi SHARED src/bmi_soil_freeze_thaw.cxx src/soil_freeze_thaw.cxx ./src/Logger.cpp)
 endif()
 
+# -----------------------------------------------------------------------------
+# Find the Boost library and configure usage
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.79.0 REQUIRED)
+
 target_include_directories(sftbmi PRIVATE include)
 
 set_target_properties(sftbmi PROPERTIES VERSION ${PROJECT_VERSION})
 
 set_target_properties(sftbmi PROPERTIES PUBLIC_HEADER ./include/bmi_soil_freeze_thaw.hxx)
+
+target_link_libraries(sftbmi PRIVATE Boost::serialization Boost::archive)
 
 include(GNUInstallDirs)
 
