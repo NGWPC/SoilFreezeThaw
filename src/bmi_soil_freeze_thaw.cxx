@@ -1,6 +1,7 @@
 #ifndef BMI_SFT_C_INCLUDED
 #define BMI_SFT_C_INCLUDED
 
+
 #include <stdio.h>
 #include <string>
 #include <cstring>
@@ -9,12 +10,8 @@
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
 #include "../include/Logger.hpp"
-#include "../bmi/bmi.hxx"
 #include <algorithm>
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
 
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
@@ -67,9 +64,7 @@ Finalize()
 int BmiSoilFreezeThaw::
 GetVarGrid(std::string name)
 {
-  if (name.compare("num_cells") == 0 
-     || name.compare("ice_fraction_scheme_bmi") == 0
-     || name.compare("serialization_free") == 0)
+  if (name.compare("num_cells") == 0 || name.compare("ice_fraction_scheme_bmi") == 0)
     return 0; // int
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
 	   || name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0
@@ -78,10 +73,6 @@ GetVarGrid(std::string name)
     return 1; //double
   else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
-  else if (name.compare("serialization_state") == 0)
-    return 3; // char
-  else if (name.compare("serialization_create") == 0)
-    return 4; // unit64_t
   else
     return -1;
 }
@@ -96,10 +87,6 @@ GetVarType(std::string name)
     return "int";
   else if (grid_id == 1 || grid_id == 2)
     return "double";
-  else if (grid_id == 3)
-    return "char";
-  else if (grid_id == 4)
-    return "uint64_t";
   else
     return "";
 }
@@ -114,10 +101,6 @@ GetVarItemsize(std::string name)
     return sizeof(int);
   else if (grid_id == 1 || grid_id == 2)
     return sizeof(double);
-  else if (grid_id == 3)
-    return sizeof(char);
-  else if (grid_id == 4)
-    return sizeof(uint64_t);
   else
     return 0;
   
@@ -212,10 +195,6 @@ GetGridSize(const int grid)
     return 1;
   else if (grid == 2)        // for arrays
     return this->state->shape[0];
-  else if (grid == 3)        // serialized data
-    return this->m_serialized_length;
-  else if (grid == 4)
-    return 1;
   else
     return -1;
 }
@@ -272,13 +251,8 @@ GetValue (std::string name, void *dest)
   int nbytes = 0;
 
   src = this->GetValuePtr(name);
-  
-  if (name.compare("serialization_state") == 0) {
-    memcpy(dest, src, this->m_serialized_length);
-  } else {
-    nbytes = this->GetVarNbytes(name);
-    memcpy (dest, src, nbytes);
-  }
+  nbytes = this->GetVarNbytes(name);
+  memcpy (dest, src, nbytes);
 }
 
 
@@ -286,9 +260,9 @@ void *BmiSoilFreezeThaw::
 GetValuePtr (std::string name)
 {
   if (name.compare("soil_temperature_profile") == 0)
-    return (void*)this->state->soil_temperature.data();
+    return (void*)this->state->soil_temperature;
   if (name.compare("soil_moisture_profile") == 0)
-    return (void*)this->state->soil_moisture_content.data();
+    return (void*)this->state->soil_moisture_content;
   else if (name.compare("ground_temperature") == 0 )
     return (void*)(&this->state->ground_temp);
   else if (name.compare("ground_heat_flux") == 0)
@@ -307,14 +281,8 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->smcmax);
   else if (name.compare("b") == 0)
     return (void*)(&this->state->b);
-  else if (name.compare("satpsi") == 0)
+    else if (name.compare("satpsi") == 0)
     return (void*)(&this->state->satpsi);
-  else if (name.compare("serialization_state") == 0)
-    return (void*)(this->m_serialized_vec.data());
-  else if (name.compare("serialization_create") == 0) {
-    this->new_serialized();
-    return (void*)(&this->m_serialized_length);
-  }
   else {
     //std::stringstream errMsg;
     //errMsg << "variable "<< name << " does not exist";
@@ -353,21 +321,8 @@ void BmiSoilFreezeThaw::
 SetValue (std::string name, void *src)
 {
   void * dest = NULL;
-
-  // special case for clearing serialized data
-  if (name.compare("serialization_free") == 0) {
-    this->clear_serialized();
-    return;
-  } else if (name.compare("serialization_state") == 0) {
-    this->load_serialized((char*)src);
-    return;
-  } else if (name.compare("serialization_create") == 0) {
-    auto msg = "Cannot set value using \"serialization_create\".";
-    Logger::Log(LogLevel::WARNING, msg);
-    throw std::runtime_error(msg);
-  } else {
-    dest = this->GetValuePtr(name);
-  }
+  
+  dest = this->GetValuePtr(name);
   
   if (dest) {
     int nbytes = 0;
@@ -526,86 +481,5 @@ GetGridNodesPerFace(const int grid, int *nodes_per_face)
   LOG(LogLevel::WARNING,"Not implemented in SFT");
   throw std::logic_error("Not Implemented in SFT");
 }
-
-
-template<class Archive>
-void BmiSoilFreezeThaw::
-serialize(Archive& ar, const unsigned int version) {
-  using boost::serialization::make_array;
-  // could throw archive_exception if the size of the archive array isn't the same as the size of the BMI
-  soilfreezethaw::SoilFreezeThaw* state = this->state;
-  int size = state->shape[0];
-  // in Advance
-  ar & state->time;
-  ar & make_array(state->soil_temperature_prev, size);
-  ar & make_array(state->soil_liquid_content, size);
-
-  // in ThermalConductivity
-  ar & make_array(state->thermal_conductivity, size);
-
-  // in SoilHeatCapacity
-  ar & make_array(state->heat_capacity, size);
-
-  // in SolveDiffusionsEquation
-  ar & state->ground_heat_flux;
-  ar & state->bottom_heat_flux;
-  ar & make_array(state->soil_temperature, size);
-
-  // in PhaseChange
-  // soil_temperature; already covered above
-  ar & state->energy_consumed;
-  // ar & make_array(state->soil_liquid_content, size);
-  ar & make_array(state->soil_moisture_content, size);
-  ar & make_array(state->soil_ice_content, size);
-
-  // in ComputeIceFraction
-  // soil_ice_content; already covered above
-  ar & state->ice_fraction_schaake;
-  ar & state->ice_fraction_xinanjiang;
-  ar & state->soil_ice_fraction;
-  ar & state->ice_fraction_scheme_bmi;
-
-  // in EnergyBalanceCheck
-  ar & state->energy_balance;
-}
-
-
-void BmiSoilFreezeThaw::
-new_serialized() {
-  this->m_serialized_vec.clear();
-  boost::archive::binary_oarchive archive(this->m_serialized_vec);
-  try {
-    archive << (*this);
-    this->m_serialized_length = this->m_serialized_vec.size();
-  } catch (const std::exception &e) {
-    Logger::Log(LogLevel::SEVERE, "Serializing SFT encountered an error: %s", e.what());
-    this->m_serialized_length = 0;
-    throw;
-  }
-}
-
-
-void BmiSoilFreezeThaw::
-load_serialized(char* data) {
-  std::stringstream stream(data);
-  boost::archive::binary_iarchive archive(stream);
-  try {
-    archive >> (*this);
-    this->clear_serialized();
-  } catch (const std::exception &e) {
-    Logger::Log(LogLevel::SEVERE, "Deserializing SFT encounterd an error: %s", e.what());
-    throw;
-  }
-}
-
-
-// Clear the currently saved serialized data and release memory
-void BmiSoilFreezeThaw::
-clear_serialized() {
-  this->m_serialized_vec.clear();
-  this->m_serialized_vec.shrink_to_fit();
-  this->m_serialized_length = 0;
-}
-
 
 #endif

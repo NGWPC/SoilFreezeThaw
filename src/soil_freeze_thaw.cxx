@@ -16,9 +16,6 @@ std::stringstream sft_ss("");
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw()
-: soil_z(), soil_dz(), soil_temperature(), soil_temperature_prev(),
-  heat_capacity(), thermal_conductivity(),
-  soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->endtime    = 10.;
   this->time       = 0.;
@@ -74,11 +71,11 @@ SoilFreezeThaw(std::string config_file)
 void soilfreezethaw::SoilFreezeThaw::
 InitializeArrays(void)
 {
-  this->thermal_conductivity.resize(ncells);
-  this->heat_capacity.resize(ncells);
-  this->soil_dz.resize(ncells);
-  this->soil_ice_content.resize(ncells);
-  this->soil_temperature_prev.resize(ncells);
+  this->thermal_conductivity = new double[ncells];
+  this->heat_capacity = new double[ncells];
+  this->soil_dz = new double[ncells];
+  this->soil_ice_content = new double[ncells];
+  this->soil_temperature_prev = new double[ncells];
   
   for (int i=0;i<ncells;i++) {
     this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
@@ -169,8 +166,12 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     else if (param_key == "soil_z") {
-      this->soil_z = ReadVectorData(param_value);
-      this->ncells = this->soil_z.size();
+      std::vector<double> vec = ReadVectorData(param_value);
+      
+      this->soil_z = new double[vec.size()];
+      for (unsigned int i=0; i < vec.size(); i++)
+	this->soil_z[i] = vec[i];
+      this->ncells = vec.size();
       this->soil_depth = this->soil_z[this->ncells-1];
       is_soil_z_set = true;
       continue;
@@ -207,20 +208,33 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     else if (param_key == "soil_temperature") {
-      this->soil_temperature = ReadVectorData(param_value);
-      n_st = this->soil_temperature.size();
+      std::vector<double> vec = ReadVectorData(param_value);
+      this->soil_temperature = new double[vec.size()];
+      for (unsigned int i=0; i < vec.size(); i++)
+	this->soil_temperature[i] = vec[i];
+      n_st = vec.size();
+      
       is_soil_temperature_set = true;
       continue;
+
     }
     else if (param_key == "soil_moisture_content") {
-      this->soil_moisture_content = ReadVectorData(param_value);
-      n_mct = this->soil_moisture_content.size();
+      std::vector<double> vec = ReadVectorData(param_value);
+      this->soil_moisture_content = new double[vec.size()];
+      for (unsigned int i=0; i < vec.size(); i++)
+	this->soil_moisture_content[i] = vec[i];
+      n_mct = vec.size();
       is_soil_moisture_content_set = true;
       continue;
     }
     else if (param_key == "soil_liquid_content") {
-      this->soil_liquid_content = ReadVectorData(param_value);
-      n_mcl = this->soil_liquid_content.size();
+      std::vector<double> vec = ReadVectorData(param_value);
+      this->soil_liquid_content = new double[vec.size()];
+      for (unsigned int i=0; i < vec.size(); i++) {
+	//	assert (this->soil_moisture_content[i] >= vec[i]);
+	this->soil_liquid_content[i] = vec[i];
+      }
+      n_mcl = vec.size();
       is_soil_liquid_content_set = true;
       continue;
     }
@@ -252,8 +266,14 @@ InitFromConfigFile(std::string config_file)
   
   // simply allocate space for soil_liquid_content and soil_moisture_content arrays, as they will be set through CFE_BMI
   if (this->is_soil_moisture_bmi_set && is_soil_z_set) {
-    this->soil_moisture_content.resize(this->ncells);
-    this->soil_liquid_content.resize(this->ncells);
+    if( soil_moisture_content != nullptr) {
+      delete [] soil_moisture_content;
+    }
+    this->soil_moisture_content = new double[this->ncells]();
+    if( soil_liquid_content != nullptr) {
+      delete [] soil_liquid_content;
+    }
+    this->soil_liquid_content = new double[this->ncells]();
     n_mct = this->ncells;
     n_mcl = this->ncells;
     is_soil_moisture_content_set = true;
