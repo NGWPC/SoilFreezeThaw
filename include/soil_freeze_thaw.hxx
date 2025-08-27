@@ -150,7 +150,7 @@ namespace soilfreezethaw {
     // method retuns dynamically allocated input variable names
     std::vector<std::string>* InputVarNamesModel();
     
-    ~SoilFreezeThaw();
+    ~SoilFreezeThaw() = default;
   };
 
   // class to contain constant variables

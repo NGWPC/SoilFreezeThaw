@@ -18,26 +18,7 @@ class NotImplemented : public std::logic_error {
 
 class BmiSoilFreezeThaw : public bmi::Bmi {
   public:
-    BmiSoilFreezeThaw() : m_serialized_vec{} {
-      this->input_var_names[0]  = "ground_temperature";
-      this->input_var_names[1]  = "soil_moisture_profile";
-      
-      this->output_var_names[0] = "ice_fraction_schaake";
-      this->output_var_names[1] = "ice_fraction_xinanjiang";
-      this->output_var_names[2] = "num_cells";
-      this->output_var_names[3] = "soil_temperature_profile";
-      this->output_var_names[4] = "soil_ice_fraction";
-      this->output_var_names[5] = "ground_heat_flux";
-
-      // add calibratable parameters
-      this->calib_var_names[0]  = "smcmax";
-      this->calib_var_names[1]  = "b";
-      this->calib_var_names[2]  = "satpsi";
-
-      // ensure empty serialized state
-      this->m_serialized_length = 0;
-    };
-
+    BmiSoilFreezeThaw();
     void Initialize(std::string config_file);
     void Update();
     void UpdateUntil(double time);
