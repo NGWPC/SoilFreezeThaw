@@ -44,6 +44,9 @@ SoilFreezeThaw()
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw(std::string config_file)
+: soil_z(), soil_dz(), soil_temperature(), soil_temperature_prev(),
+  heat_capacity(), thermal_conductivity(),
+  soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->latent_heat_fusion = 0.3336E06;
   
