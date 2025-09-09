@@ -86,15 +86,15 @@ namespace soilfreezethaw {
     double top_boundary_temp_const;
     double ground_heat_flux;
     double bottom_heat_flux;
-    double *soil_z                = NULL;
-    double *soil_dz               = NULL;
-    double *soil_temperature      = NULL;
-    double *soil_temperature_prev = NULL;
-    double *heat_capacity         = NULL;
-    double *thermal_conductivity  = NULL;
-    double *soil_moisture_content = NULL;
-    double *soil_liquid_content   = NULL;
-    double *soil_ice_content      = NULL;
+    vector<double> soil_z;
+    vector<double> soil_dz;
+    vector<double> soil_temperature;
+    vector<double> soil_temperature_prev;
+    vector<double> heat_capacity;
+    vector<double> thermal_conductivity;
+    vector<double> soil_moisture_content;
+    vector<double> soil_liquid_content;
+    vector<double> soil_ice_content;
     double soil_ice_fraction;
     double ground_temp;
     int    option_bottom_boundary;
@@ -150,7 +150,7 @@ namespace soilfreezethaw {
     // method retuns dynamically allocated input variable names
     std::vector<std::string>* InputVarNamesModel();
     
-    ~SoilFreezeThaw();
+    ~SoilFreezeThaw() = default;
   };
 
   // class to contain constant variables

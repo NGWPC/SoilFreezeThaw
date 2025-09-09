@@ -16,6 +16,9 @@ std::stringstream sft_ss("");
 
 soilfreezethaw::SoilFreezeThaw::
 SoilFreezeThaw()
+: soil_z(), soil_dz(), soil_temperature(), soil_temperature_prev(),
+  heat_capacity(), thermal_conductivity(),
+  soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->endtime    = 10.;
   this->time       = 0.;
@@ -71,11 +74,11 @@ SoilFreezeThaw(std::string config_file)
 void soilfreezethaw::SoilFreezeThaw::
 InitializeArrays(void)
 {
-  this->thermal_conductivity = new double[ncells];
-  this->heat_capacity = new double[ncells];
-  this->soil_dz = new double[ncells];
-  this->soil_ice_content = new double[ncells];
-  this->soil_temperature_prev = new double[ncells];
+  this->thermal_conductivity.resize(ncells);
+  this->heat_capacity.resize(ncells);
+  this->soil_dz.resize(ncells);
+  this->soil_ice_content.resize(ncells);
+  this->soil_temperature_prev.resize(ncells);
   
   for (int i=0;i<ncells;i++) {
     this->soil_ice_content[i] = this->soil_moisture_content[i] - this->soil_liquid_content[i];
@@ -166,12 +169,8 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     else if (param_key == "soil_z") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      
-      this->soil_z = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_z[i] = vec[i];
-      this->ncells = vec.size();
+      this->soil_z = ReadVectorData(param_value);
+      this->ncells = this->soil_z.size();
       this->soil_depth = this->soil_z[this->ncells-1];
       is_soil_z_set = true;
       continue;
@@ -208,33 +207,20 @@ InitFromConfigFile(std::string config_file)
       continue;
     }
     else if (param_key == "soil_temperature") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_temperature = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_temperature[i] = vec[i];
-      n_st = vec.size();
-      
+      this->soil_temperature = ReadVectorData(param_value);
+      n_st = this->soil_temperature.size();
       is_soil_temperature_set = true;
       continue;
-
     }
     else if (param_key == "soil_moisture_content") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_moisture_content = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++)
-	this->soil_moisture_content[i] = vec[i];
-      n_mct = vec.size();
+      this->soil_moisture_content = ReadVectorData(param_value);
+      n_mct = this->soil_moisture_content.size();
       is_soil_moisture_content_set = true;
       continue;
     }
     else if (param_key == "soil_liquid_content") {
-      std::vector<double> vec = ReadVectorData(param_value);
-      this->soil_liquid_content = new double[vec.size()];
-      for (unsigned int i=0; i < vec.size(); i++) {
-	//	assert (this->soil_moisture_content[i] >= vec[i]);
-	this->soil_liquid_content[i] = vec[i];
-      }
-      n_mcl = vec.size();
+      this->soil_liquid_content = ReadVectorData(param_value);
+      n_mcl = this->soil_liquid_content.size();
       is_soil_liquid_content_set = true;
       continue;
     }
@@ -266,8 +252,8 @@ InitFromConfigFile(std::string config_file)
   
   // simply allocate space for soil_liquid_content and soil_moisture_content arrays, as they will be set through CFE_BMI
   if (this->is_soil_moisture_bmi_set && is_soil_z_set) {
-    this->soil_moisture_content = new double[this->ncells]();
-    this->soil_liquid_content = new double[this->ncells]();
+    this->soil_moisture_content.resize(this->ncells);
+    this->soil_liquid_content.resize(this->ncells);
     n_mct = this->ncells;
     n_mcl = this->ncells;
     is_soil_moisture_content_set = true;
@@ -893,6 +879,16 @@ PhaseChange() {
     soil_moisture_content[i]  = (MassLiq_L[i] + MassIce_L[i]) / (prop.wdensity_ * soil_dz[i]); // [-]
     soil_ice_content[i] = std::max(soil_moisture_content[i] - soil_liquid_content[i],0.);
   }
+
+  delete [] Supercool;
+  delete [] MassIce_L;
+  delete [] MassLiq_L;
+  delete [] HeatEnergy_L;
+  delete [] MassPhaseChange_L;
+  delete [] soil_moisture_content_c;
+  delete [] MassLiq_c;
+  delete [] MassIce_c;
+  delete [] IndexMelt;
 }
 
 
@@ -970,10 +966,6 @@ Properties() :
   grav_    (9.86),
   tfrez_     (273.15),
   wdensity_ (1000.)
-{}
-
-soilfreezethaw::SoilFreezeThaw::
-~SoilFreezeThaw()
 {}
 
 #endif
