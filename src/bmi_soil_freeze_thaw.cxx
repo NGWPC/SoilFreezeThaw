@@ -150,10 +150,13 @@ GetVarUnits(std::string name)
 {
   if (name.compare("ground_temperature") == 0 || name.compare("soil_temperature_profile") == 0)
     return "K";
-  else if (name.compare("ice_fraction_schaake") == 0)
-    return "m";
   else if (name.compare("ground_heat_flux") == 0)
     return "W m-2";
+  else if (name.compare("ice_fraction_schaake") == 0 ||
+           name.compare("ice_fraction_xinanjiang") == 0 ||
+           name.compare("soil_ice_fraction") == 0 ||
+           name.compare("soil_moisture_profile") == 0)
+    return "1"; // UDUNITS dimensionless
   else
     return "none";
 }
