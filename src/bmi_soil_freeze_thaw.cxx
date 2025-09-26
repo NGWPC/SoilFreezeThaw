@@ -101,7 +101,8 @@ GetVarGrid(std::string name)
     return 2; // arrays
   else if (name.compare("serialization_state") == 0)
     return 3; // char
-  else if (name.compare("serialization_create") == 0)
+  else if (name.compare("serialization_create") == 0
+           || name.compare("serialization_size") == 0)
     return 4; // unit64_t
   else
     return -1;
@@ -335,8 +336,7 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->satpsi);
   else if (name.compare("serialization_state") == 0)
     return (void*)(this->m_serialized_vec.data());
-  else if (name.compare("serialization_create") == 0) {
-    this->new_serialized();
+  else if (name.compare("serialization_size") == 0) {
     return (void*)(&this->m_serialized_length);
   }
   else {
@@ -386,9 +386,8 @@ SetValue (std::string name, void *src)
     this->load_serialized((char*)src);
     return;
   } else if (name.compare("serialization_create") == 0) {
-    auto msg = "Cannot set value using \"serialization_create\".";
-    Logger::Log(LogLevel::WARNING, msg);
-    throw std::runtime_error(msg);
+    this->new_serialized();
+    return;
   } else {
     dest = this->GetValuePtr(name);
   }
