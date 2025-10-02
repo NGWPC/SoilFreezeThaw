@@ -190,7 +190,10 @@ InitFromConfigFile(std::string config_file)
     else if (param_key == "b" || param_key == "soil_params.b") {
       this->b = std::stod(param_value);
       std::string b_unit = line.substr(loc_u+1,line.length());
-      assert (this->b > 0);
+      if ( !(this->b > 0)) {
+        LOG(LogLevel::FATAL, "%s=%f is invalid. Must be > 0. Source file: %s", param_key.c_str(), this->b, config_file.c_str());
+        assert(this->b > 0);
+      }
       is_b_set = true;
       continue;
     }
@@ -198,7 +201,10 @@ InitFromConfigFile(std::string config_file)
     // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
     else if (param_key == "quartz" || param_key == "soil_params.quartz") {
       this->quartz = std::stod(param_value);
-      assert (this->quartz > 0);
+      if ( !(this->quartz > 0)) {
+        LOG(LogLevel::FATAL, "%s=%f is invalid. Must be > 0. Source file: %s", param_key.c_str(), this->quartz, config_file.c_str());
+        assert(this->quartz > 0);
+      }
       is_quartz_set = true;
       continue;
     }
@@ -327,9 +333,13 @@ InitFromConfigFile(std::string config_file)
   this->option_top_boundary = is_top_boundary_temp_set == true ? 1 : 2; // 1: constant temp, 2: from a file
 
   // check if the size of the input data is consistent
-  assert (n_st == this->ncells);
-  assert (n_mct == this->ncells);
-  assert (n_mcl == this->ncells);
+  if ( !(n_st == this->ncells) || !(n_mct == this->ncells) || !(n_mcl == this->ncells) ) {
+    LOG(LogLevel::FATAL, "%s: Size of input data inconsistent. ncells=%d: n_st=%d, n_mct=%d, n_mcl=%d",
+        config_file.c_str(), this->ncells, n_st, n_mct, n_mcl);
+    assert(n_st == this->ncells);
+    assert(n_mct == this->ncells);
+    assert(n_mcl == this->ncells);
+  }
 }
 
 /*
@@ -399,7 +409,11 @@ ComputeIceFraction()
     for (int i =0; i < ncells; i++) {
       val += this->soil_ice_content[i] * this->soil_dz[i];
     }
-    assert (this->ice_fraction_schaake <= this->soil_depth);
+    if ( !(this->ice_fraction_schaake <= this->soil_depth) ) {
+        LOG(LogLevel::FATAL, "ice_fraction_schaake %f > soil_depth %f",
+            this->ice_fraction_schaake, this->soil_depth);
+        assert(this->ice_fraction_schaake <= this->soil_depth);
+    }
     this->ice_fraction_schaake = val;
   }
   else if (this->ice_fraction_scheme_bmi == SurfaceRunoffScheme::Xinanjiang) {
@@ -521,7 +535,10 @@ GroundHeatFlux(double soil_temp)
     return 0;
   }
 
-  assert (this->soil_z[0] >0);
+  if ( !(this->soil_z[0] >0)) {
+    LOG(LogLevel::FATAL, "soil_z[0] = %f is invalid. Must be > 0.", this->soil_z[0]);
+    assert(this->soil_z[0] >0);
+  }
   double ground_heat_flux_loc = - thermal_conductivity[0] * (soil_temp  - surface_temp) / (0.5*soil_z[0]); // half of top cell thickness
   
   return ground_heat_flux_loc;
