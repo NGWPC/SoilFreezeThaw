@@ -150,11 +150,11 @@ InitFromConfigFile(std::string config_file)
       this->endtime = std::stod(param_value);
 
       if (param_unit == "[d]" || param_unit == "[day]") 
-	this->endtime *= 86400;
+	      this->endtime *= 86400;
       else if (param_unit == "[s]" || param_unit == "[sec]")
-	this->endtime *= 1.0;
+	      this->endtime *= 1.0;
       else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
-	this->endtime *= 3600.0;
+	      this->endtime *= 3600.0;
 
       is_endtime_set = true;
       continue;
@@ -162,11 +162,11 @@ InitFromConfigFile(std::string config_file)
     else if (param_key == "dt") {
       this->dt = std::stod(param_value);
       if (param_unit == "[d]" || param_unit == "[day]")
-	this->dt *= 86400;
+	      this->dt *= 86400;
       else if (param_unit == "[s]" || param_unit == "[sec]")
-	this->dt *= 1.0;
+	      this->dt *= 1.0;
       else if (param_unit == "[h]" || param_unit == "[hr]" || param_unit == "") // defalut time unit is hour
-	this->dt *= 3600.0;
+	      this->dt *= 3600.0;
       
       is_dt_set = true;
       continue;
