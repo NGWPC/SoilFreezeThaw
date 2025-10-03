@@ -201,7 +201,7 @@ InitFromConfigFile(std::string config_file)
     // See https://github.com/NOAA-OWP/SoilFreezeThaw/pull/14#issuecomment-1864879127 for discussion
     else if (param_key == "quartz" || param_key == "soil_params.quartz") {
       this->quartz = std::stod(param_value);
-      if ( !(this->quartz > 0)) {
+      if ( !(this->quartz >= 0)) {
         LOG(LogLevel::FATAL, "%s=%f is invalid. Must be > 0. Source file: %s", param_key.c_str(), this->quartz, config_file.c_str());
         assert(this->quartz > 0);
       }
