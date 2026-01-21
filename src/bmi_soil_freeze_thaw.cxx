@@ -95,7 +95,8 @@ GetVarGrid(std::string name)
   else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
 	   || name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0
 	   || name.compare("ground_heat_flux") == 0 || name.compare("smcmax") == 0
-	   || name.compare("b") == 0 || name.compare("satpsi") == 0)
+	   || name.compare("b") == 0 || name.compare("satpsi") == 0
+     || name == "reset_time")
     return 1; //double
   else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
@@ -388,6 +389,9 @@ SetValue (std::string name, void *src)
   } else if (name.compare("serialization_create") == 0) {
     this->new_serialized();
     return;
+  } else if (name == "reset_time") {
+    this->reset_time();
+    return;
   } else {
     dest = this->GetValuePtr(name);
   }
@@ -626,6 +630,12 @@ clear_serialized() {
   this->m_serialized_vec.clear();
   this->m_serialized_vec.shrink_to_fit();
   this->m_serialized_length = 0;
+}
+
+void BmiSoilFreezeThaw::
+reset_time() {
+  // time doesn't seem to be used anywhere but GetCurrentTime, so safe to set to 0 and nothing else
+  this->state->time = 0.0;
 }
 
 
