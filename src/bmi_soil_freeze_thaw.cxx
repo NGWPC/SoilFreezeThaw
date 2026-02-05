@@ -597,11 +597,15 @@ serialize(Archive& ar, const unsigned int version) {
 
 void BmiSoilFreezeThaw::
 new_serialized() {
-  this->m_serialized_vec.clear();
+  // resize to reserve space for the serialized size as a header
+  this->m_serialized_vec.resize(sizeof(uint64_t));
   boost::archive::binary_oarchive archive(this->m_serialized_vec);
   try {
     archive << (*this);
     this->m_serialized_length = this->m_serialized_vec.size();
+    // copy size of serialized data to the beginning as a header
+    uint64_t serialized_size = this->m_serialized_length - sizeof(uint64_t);
+    memcpy(this->m_serialized_vec.data(), &serialized_size, sizeof(uint64_t));
   } catch (const std::exception &e) {
     Logger::Log(LogLevel::SEVERE, "Serializing SFT encountered an error: %s", e.what());
     this->m_serialized_length = 0;
@@ -612,7 +616,11 @@ new_serialized() {
 
 void BmiSoilFreezeThaw::
 load_serialized(char* data) {
-  std::stringstream stream(data);
+  // pull data size from header of raw data ptr
+  uint64_t size;
+  memcpy(&size, data, sizeof(uint64_t));
+  // create stream from after the size header
+  membuf stream(data + sizeof(uint64_t), size);
   boost::archive::binary_iarchive archive(stream);
   try {
     archive >> (*this);
