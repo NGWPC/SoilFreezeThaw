@@ -40,11 +40,18 @@ BmiSoilFreezeThaw::BmiSoilFreezeThaw() : m_serialized_vec{} {
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
+  // Initialize the Error, Warning and Trapping System
+#ifdef EWTS_HAVE_NGEN_BRIDGE    
+  EwtsInit(EWTS_ID_SFT, true);
+#else
+  EwtsInit(EWTS_ID_SFT, false);
+#endif
   LOG(LogLevel::INFO, "Initializing SFT");
-  if (config_file.compare("") != 0 )
-    this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
 
-  verbosity= this->state->verbosity;
+  if (config_file.compare("") != 0 )
+      this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
+
+    verbosity= this->state->verbosity;
 }
 
 void BmiSoilFreezeThaw::
@@ -607,7 +614,7 @@ new_serialized() {
     uint64_t serialized_size = this->m_serialized_length - sizeof(uint64_t);
     memcpy(this->m_serialized_vec.data(), &serialized_size, sizeof(uint64_t));
   } catch (const std::exception &e) {
-    Logger::Log(LogLevel::SEVERE, "Serializing SFT encountered an error: %s", e.what());
+    LOG(LogLevel::SEVERE, "Serializing SFT encountered an error: %s", e.what());
     this->m_serialized_length = 0;
     throw;
   }
@@ -626,7 +633,7 @@ load_serialized(char* data) {
     archive >> (*this);
     this->clear_serialized();
   } catch (const std::exception &e) {
-    Logger::Log(LogLevel::SEVERE, "Deserializing SFT encounterd an error: %s", e.what());
+    LOG(LogLevel::SEVERE, "Deserializing SFT encounterd an error: %s", e.what());
     throw;
   }
 }
