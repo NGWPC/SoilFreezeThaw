@@ -40,6 +40,11 @@ SoilFreezeThaw()
   this->ground_temp             = 273.15;
   this->soil_ice_fraction       = 0.0;
   this->bottom_boundary_temp_const = 275.15;
+  this->ground_heat_flux        = 0.0;
+  this->bottom_heat_flux        = 0.0;
+  this->energy_consumed         = 0.0;
+  this->energy_balance          = 0.0;
+  this->verbosity               = "none";
 }
 
 soilfreezethaw::SoilFreezeThaw::
@@ -49,6 +54,11 @@ SoilFreezeThaw(std::string config_file)
   soil_moisture_content(), soil_liquid_content(), soil_ice_content()
 {
   this->latent_heat_fusion = 0.3336E06;
+  this->ground_heat_flux   = 0.0;
+  this->bottom_heat_flux   = 0.0;
+  this->energy_consumed    = 0.0;
+  this->energy_balance     = 0.0;
+  this->verbosity          = "none";
   
   //this->option_bottom_boundary = 2; // 1: constant temp, 2: zero thermal flux
   //this->option_top_boundary = 2;    // 1: constant temp, 2: from a file
@@ -73,7 +83,6 @@ SoilFreezeThaw(std::string config_file)
   this->energy_balance          = 0.0;
 }
 
-
 void soilfreezethaw::SoilFreezeThaw::
 InitializeArrays(void)
 {
@@ -97,6 +106,8 @@ InitializeArrays(void)
 void soilfreezethaw::SoilFreezeThaw::
 InitFromConfigFile(std::string config_file)
 { 
+  this->config_file = config_file;
+
   std::ifstream fp;
   fp.open(config_file);
 
@@ -105,7 +116,6 @@ InitFromConfigFile(std::string config_file)
     LOG(sft_ss.str(), LogLevel::WARNING); sft_ss.str("");
     abort();
   }
-  // int n_st, n_mct, n_mcl;
   int n_st = 0, n_mct = 0, n_mcl = 0;
 
   this->is_soil_moisture_bmi_set = false;
@@ -966,14 +976,13 @@ EnergyBalanceCheck()
     sprintf(prtMsg,  "Energy balance error (global)  [W/m^2] = %6.4e \n", energy_balance);
     LOG(prtMsg, LogLevel::INFO); prtMsg[0] = 0;
 
-    if (fabs(energy_balance) > tolerance) {}
+    if (fabs(energy_balance) > tolerance) {
         std::string errMsg = "Soil energy balance error...";
         LOG(LogLevel::WARNING, errMsg);
         throw std::runtime_error(errMsg);
     }
-  
+  }
 }
-
 
 /*
   class containing some of the static variables used by several modules

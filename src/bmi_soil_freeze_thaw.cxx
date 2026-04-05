@@ -41,17 +41,22 @@ void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
   // Initialize the Error, Warning and Trapping System
-#ifdef EWTS_HAVE_NGEN_BRIDGE    
+#ifdef EWTS_HAVE_NGEN_BRIDGE
   EwtsInit(EWTS_ID_SFT, true);
 #else
   EwtsInit(EWTS_ID_SFT, false);
 #endif
   LOG(LogLevel::INFO, "Initializing SFT");
 
-  if (config_file.compare("") != 0 )
+  if (config_file.compare("") != 0 ) {
       this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
-
-    verbosity= this->state->verbosity;
+      verbosity= this->state->verbosity;
+  }
+  else {
+      std::string errMsg = "SFT Initialize called with empty config file";
+      LOG(LogLevel::WARNING, errMsg);
+      throw std::runtime_error(errMsg);
+  }
 }
 
 void BmiSoilFreezeThaw::
@@ -88,8 +93,10 @@ UpdateUntil(double t)
 void BmiSoilFreezeThaw::
 Finalize()
 {
-  if (this->state != nullptr)
+  if (this->state != nullptr) {
     delete this->state;
+    this->state = nullptr;
+  }
 }
 
 int BmiSoilFreezeThaw::
@@ -342,21 +349,21 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->b);
   else if (name.compare("satpsi") == 0)
     return (void*)(&this->state->satpsi);
-  else if (name.compare("serialization_state") == 0)
+  else if (name.compare("serialization_state") == 0) {
+    if (this->m_serialized_length == 0)
+      return NULL;
     return (void*)(this->m_serialized_vec.data());
+  }
   else if (name.compare("serialization_size") == 0) {
     return (void*)(&this->m_serialized_length);
   }
   else {
-    //std::stringstream errMsg;
-    //errMsg << "variable "<< name << " does not exist";
     std::string errMsg = "Variable " + name + " does not exist\n";
     LOG(LogLevel::WARNING, errMsg);
     throw std::runtime_error(errMsg);
     return NULL;
   }
 }
-
 
 void BmiSoilFreezeThaw::
 GetValueAtIndices (std::string name, void *dest, int *inds, int len)
