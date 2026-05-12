@@ -42,9 +42,9 @@ Initialize (std::string config_file)
 {
   // Initialize the Error, Warning and Trapping System
 #ifdef EWTS_HAVE_NGEN_BRIDGE    
-  EwtsInit(EWTS_ID_SFT, true);
+  EwtsInit(SFT_MODULE_ID, true);
 #else
-  EwtsInit(EWTS_ID_SFT, false);
+  EwtsInit(SFT_MODULE_ID, false);
 #endif
   LOG(LogLevel::INFO, "Initializing SFT");
 
