@@ -41,7 +41,7 @@ void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
   // Initialize the Error, Warning and Trapping System
-#ifdef EWTS_HAVE_NGEN_BRIDGE    
+#ifdef USE_EWTS    
   EwtsInit(SFT_MODULE_ID, true);
 #else
   EwtsInit(SFT_MODULE_ID, false);
