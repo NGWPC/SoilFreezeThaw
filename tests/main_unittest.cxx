@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
     if (var_name == "soil_moisture_profile") {
       bool check = false;
       for (int i1 =0; i1 < nz; i1++) {
-	assert (fabs(var[i] - soil_moisture_profile[i]) < 0.001);
+	assert (fabs(var[i1] - soil_moisture_profile[i1]) < 0.001);
 	check=true;
       }
       if (check)
@@ -536,7 +536,7 @@ int main(int argc, char *argv[])
       model.GetValue(var_name, &(var[0]));
       bool check = false;
       for (int i1 =0; i1 < nz; i1++) {
-	assert (fabs(var[i] - soil_T[i]) < 0.001);
+	assert (fabs(var[i1] - soil_T[i1]) < 0.001);
 	check=true;
       }
       delete [] var;

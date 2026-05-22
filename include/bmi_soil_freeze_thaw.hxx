@@ -77,7 +77,7 @@ class BmiSoilFreezeThaw : public bmi::Bmi {
     uint64_t m_serialized_length; // can theoretically always be derived from the vec's size, but needed for having a stable location for GetValuePtr
     static const int input_var_name_count  = 2;
     static const int output_var_name_count = 6;
-    static const int calib_var_name_count  = 3;
+    static const int calib_var_name_count  = 4;
 
     std::string input_var_names[input_var_name_count];
     std::string output_var_names[output_var_name_count];
