@@ -12,6 +12,7 @@
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
+#include "../include/Logger.hpp"
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -465,7 +466,7 @@ int main(int argc, char *argv[])
                    << soil_moisture_profile[1] << " "
                    << soil_moisture_profile[2] << " "
                    << soil_moisture_profile[3] << "\n";
-            LOG(LogLevel::FATAL, errMsg.str());
+	    LOG(LogLevel::FATAL, errMsg.str());
             throw std::runtime_error(errMsg.str());
         }
     }
@@ -558,7 +559,7 @@ int main(int argc, char *argv[])
                    << soil_T[1] << " "
                    << soil_T[2] << " "
                    << soil_T[3] << "\n";
-            LOG(LogLevel::FATAL, errMsg.str());
+	    LOG(LogLevel::FATAL, errMsg.str());
             throw std::runtime_error(errMsg.str());
         }
     }
