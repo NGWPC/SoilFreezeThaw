@@ -95,28 +95,32 @@ Finalize()
 int BmiSoilFreezeThaw::
 GetVarGrid(std::string name)
 {
-  if (name.compare("num_cells") == 0 
-     || name.compare("ice_fraction_scheme_bmi") == 0
-     || name.compare("serialization_free") == 0)
+  if (name.compare("num_cells") == 0 ||
+      name.compare("ice_fraction_scheme_bmi") == 0 ||
+      name.compare("serialization_free") == 0)
     return 0; // int
-  else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
-	   || name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0
-	   || name.compare("ground_heat_flux") == 0 || name.compare("smcmax") == 0
-	   || name.compare("b") == 0 || name.compare("satpsi") == 0
-           || name.compare("quartz") == 0
-     || name == "reset_time")
+  else if (name.compare("ground_temperature") == 0 ||
+           name.compare("ice_fraction_schaake") == 0 ||
+           name.compare("ice_fraction_xinanjiang") == 0 ||
+           name.compare("soil_ice_fraction") == 0 ||
+           name.compare("ground_heat_flux") == 0 ||
+           name.compare("smcmax") == 0 ||
+           name.compare("b") == 0 ||
+           name.compare("satpsi") == 0 ||
+           name.compare("quartz") == 0 ||
+           name == "reset_time")
     return 1; //double
-  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 ||
+           name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
   else if (name.compare("serialization_state") == 0)
     return 3; // char
-  else if (name.compare("serialization_create") == 0
-           || name.compare("serialization_size") == 0)
+  else if (name.compare("serialization_create") == 0 ||
+           name.compare("serialization_size") == 0)
     return 4; // unit64_t
   else
     return -1;
 }
-
 
 std::string BmiSoilFreezeThaw::
 GetVarType(std::string name)
@@ -199,15 +203,20 @@ GetVarLocation(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
     return "node";
-  else if (name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0)
+  else if (name.compare("ice_fraction_xinanjiang") == 0 ||
+           name.compare("soil_ice_fraction") == 0)
     return "node";
-  else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0
-	   || name.compare("ground_heat_flux") == 0
-           || name.compare("ice_fraction_scheme_bmi") == 0
-           || name.compare("smcmax") == 0 || name.compare("b") == 0
-           || name.compare("satpsi") == 0 || name.compare("quartz") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0 ||
+           name.compare("num_cells") == 0 ||
+           name.compare("ground_heat_flux") == 0 ||
+           name.compare("ice_fraction_scheme_bmi") == 0 ||
+           name.compare("smcmax") == 0 ||
+           name.compare("b") == 0 ||
+           name.compare("satpsi") == 0 ||
+           name.compare("quartz") == 0)
     return "node";
-  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 ||
+           name.compare("soil_temperature_profile") == 0)
     return "node";
   else {
     std::string errMsg = "Variable " + name + " does not exist";
@@ -271,7 +280,6 @@ GetGridSize(const int grid)
     return -1;
 }
 
-
 std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
@@ -279,10 +287,12 @@ GetGridType(const int grid)
     return "scalar";
   else if (grid == 2)
     return "uniform_rectilinear";
-  else
-    throw std::runtime_error("Grid " + std::to_string(grid) + " does not exist");
+  else {
+    std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
+    LOG(LogLevel::SEVERE, errMsg);
+    throw std::runtime_error(errMsg);
+  }
 }
-
 
 void BmiSoilFreezeThaw::
 GetGridX(const int grid, double *x)
