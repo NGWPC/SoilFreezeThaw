@@ -137,7 +137,7 @@ GetVarType(std::string name)
     return "uint64_t";
   else {
     std::string errMsg = "Variable " + name + " does not exist";
-    LOG(LogLevel::WARNING, errMsg);
+    LOG(LogLevel::FATAL, errMsg);
     throw std::runtime_error(errMsg);
   }
 }
@@ -220,7 +220,7 @@ GetVarLocation(std::string name)
     return "node";
   else {
     std::string errMsg = "Variable " + name + " does not exist";
-    LOG(LogLevel::WARNING, errMsg);
+    LOG(LogLevel::FATAL, errMsg);
     throw std::runtime_error(errMsg);
   }
 }
@@ -289,7 +289,7 @@ GetGridType(const int grid)
     return "uniform_rectilinear";
   else {
     std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
-    LOG(LogLevel::SEVERE, errMsg);
+    LOG(LogLevel::FATAL, errMsg);
     throw std::runtime_error(errMsg);
   }
 }
