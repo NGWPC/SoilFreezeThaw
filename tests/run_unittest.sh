@@ -2,6 +2,11 @@
 set -e
 
 EWTS_PREFIX="${EWTS_PREFIX:-/tmp/ewts_install}"
+EWTS_LIB_DIR="${EWTS_LIB_DIR:-${EWTS_PREFIX}/lib}"
+
+if [ ! -d "${EWTS_LIB_DIR}" ] && [ -d "${EWTS_PREFIX}/lib64" ]; then
+  EWTS_LIB_DIR="${EWTS_PREFIX}/lib64"
+fi
 
 ${CXX:-g++} -Og -std=c++17 -Wall \
   -DBMI_ACTIVE \
@@ -34,8 +39,8 @@ ${CXX:-g++} \
   main_unittest.o \
   bmi_soil_freeze_thaw.o \
   soil_freeze_thaw.o \
-  -L"${EWTS_PREFIX}/lib" \
-  -Wl,-rpath,"${EWTS_PREFIX}/lib" \
+  -L"${EWTS_LIB_DIR}" \
+  -Wl,-rpath,"${EWTS_LIB_DIR}" \
   -Wl,--no-as-needed \
   -lewts_ngen_bridge \
   -Wl,--as-needed \
