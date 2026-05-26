@@ -12,7 +12,6 @@
 #include "../bmi/bmi.hxx"
 #include "../include/bmi_soil_freeze_thaw.hxx"
 #include "../include/soil_freeze_thaw.hxx"
-#include "../include/Logger.hpp"
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -448,27 +447,12 @@ int main(int argc, char *argv[])
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // compare benchmark value with bmi GetValue
     if (var_name == "soil_moisture_profile") {
-        bool check = true;
+        bool check = false;
         for (int i1 = 0; i1 < nz; i1++) {
-            if (fabs(var[i1] - soil_moisture_profile[i1]) >= 0.001) {
-                check = false;
-                break;
-            }
+            assert(fabs(var[i1] - soil_moisture_profile[i1]) < 0.001);
+            check = fabs(var[i1] - soil_moisture_profile[i1]) < 0.001;
         }
-        if (check)
-            test_status &= true;
-        else {
-            test_status &= false;
-            std::string passed = test_status == true ? "Yes" : "No";
-            std::cout << "Test passed: " << passed << "\n";
-            std::stringstream errMsg;
-            errMsg << "Soil moisture should be: " << soil_moisture_profile[0] << " "
-                   << soil_moisture_profile[1] << " "
-                   << soil_moisture_profile[2] << " "
-                   << soil_moisture_profile[3] << "\n";
-	    LOG(LogLevel::FATAL, errMsg.str());
-            throw std::runtime_error(errMsg.str());
-        }
+        test_status &= check;
     }
     else if (var_name == "ground_temperature") {
     // Go ahead and test set_value_*() for last time step here
@@ -540,28 +524,13 @@ int main(int argc, char *argv[])
     else if (var_name.compare("soil_temperature_profile") == 0) {
         double *var = new double[nz];
         model.GetValue(var_name, &(var[0]));
-        bool check = true;
+        bool check = false;
         for (int i1 = 0; i1 < nz; i1++) {
-            if (fabs(var[i1] - soil_T[i1]) >= 0.001) {
-                check = false;
-                break;
-            }
+            assert(fabs(var[i1] - soil_T[i1]) < 0.001);
+            check = fabs(var[i1] - soil_T[i1]) < 0.001;
         }
         delete [] var;
-        if (check)
-            test_status &= true;
-        else {
-            test_status &= false;
-            std::string passed = test_status == true ? "Yes" : "No";
-            std::cout << "Test passed: " << passed << "\n";
-            std::stringstream errMsg;
-            errMsg << "Soil temperature should be: " << soil_T[0] << " "
-                   << soil_T[1] << " "
-                   << soil_T[2] << " "
-                   << soil_T[3] << "\n";
-	    LOG(LogLevel::FATAL, errMsg.str());
-            throw std::runtime_error(errMsg.str());
-        }
+        test_status &= check;
     }
   }
 
