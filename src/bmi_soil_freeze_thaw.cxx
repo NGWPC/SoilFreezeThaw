@@ -32,7 +32,6 @@ BmiSoilFreezeThaw::BmiSoilFreezeThaw() : m_serialized_vec{} {
   this->calib_var_names[0]  = "smcmax";
   this->calib_var_names[1]  = "b";
   this->calib_var_names[2]  = "satpsi";
-  this->calib_var_names[3]  = "quartz";
  
   // ensure empty serialized state
   this->m_serialized_length = 0;
