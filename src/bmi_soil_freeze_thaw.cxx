@@ -95,27 +95,32 @@ Finalize()
 int BmiSoilFreezeThaw::
 GetVarGrid(std::string name)
 {
-  if (name.compare("num_cells") == 0 
-     || name.compare("ice_fraction_scheme_bmi") == 0
-     || name.compare("serialization_free") == 0)
+  if (name.compare("num_cells") == 0 ||
+      name.compare("ice_fraction_scheme_bmi") == 0 ||
+      name.compare("serialization_free") == 0)
     return 0; // int
-  else if (name.compare("ground_temperature") == 0 || name.compare("ice_fraction_schaake") == 0
-	   || name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0
-	   || name.compare("ground_heat_flux") == 0 || name.compare("smcmax") == 0
-	   || name.compare("b") == 0 || name.compare("satpsi") == 0
-     || name == "reset_time")
+  else if (name.compare("ground_temperature") == 0 ||
+           name.compare("ice_fraction_schaake") == 0 ||
+           name.compare("ice_fraction_xinanjiang") == 0 ||
+           name.compare("soil_ice_fraction") == 0 ||
+           name.compare("ground_heat_flux") == 0 ||
+           name.compare("smcmax") == 0 ||
+           name.compare("b") == 0 ||
+           name.compare("satpsi") == 0 ||
+           name.compare("quartz") == 0 ||
+           name == "reset_time")
     return 1; //double
-  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 ||
+           name.compare("soil_temperature_profile") == 0)
     return 2; // arrays
   else if (name.compare("serialization_state") == 0)
     return 3; // char
-  else if (name.compare("serialization_create") == 0
-           || name.compare("serialization_size") == 0)
+  else if (name.compare("serialization_create") == 0 ||
+           name.compare("serialization_size") == 0)
     return 4; // unit64_t
   else
     return -1;
 }
-
 
 std::string BmiSoilFreezeThaw::
 GetVarType(std::string name)
@@ -130,8 +135,11 @@ GetVarType(std::string name)
     return "char";
   else if (grid_id == 4)
     return "uint64_t";
-  else
-    return "";
+  else {
+    std::string errMsg = "Variable " + name + " does not exist";
+    LOG(LogLevel::FATAL, errMsg);
+    throw std::runtime_error(errMsg);
+  }
 }
 
 
@@ -164,8 +172,14 @@ GetVarUnits(std::string name)
   else if (name.compare("ice_fraction_schaake") == 0 ||
            name.compare("ice_fraction_xinanjiang") == 0 ||
            name.compare("soil_ice_fraction") == 0 ||
-           name.compare("soil_moisture_profile") == 0)
+           name.compare("soil_moisture_profile") == 0 ||
+           name.compare("ice_fraction_scheme_bmi") == 0 ||
+           name.compare("smcmax") == 0 ||
+           name.compare("b") == 0 ||
+           name.compare("quartz") == 0)
     return "1"; // UDUNITS dimensionless
+  else if (name.compare("satpsi") == 0)
+    return "m";
   else
     return "none";
 }
@@ -189,15 +203,26 @@ GetVarLocation(std::string name)
 {
   if (name.compare("ground_temperature") == 0)
     return "node";
-  else if (name.compare("ice_fraction_xinanjiang") == 0 || name.compare("soil_ice_fraction") == 0)
+  else if (name.compare("ice_fraction_xinanjiang") == 0 ||
+           name.compare("soil_ice_fraction") == 0)
     return "node";
-  else if (name.compare("ice_fraction_schaake") == 0 ||  name.compare("num_cells") == 0
-	   || name.compare("ground_heat_flux") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0 ||
+           name.compare("num_cells") == 0 ||
+           name.compare("ground_heat_flux") == 0 ||
+           name.compare("ice_fraction_scheme_bmi") == 0 ||
+           name.compare("smcmax") == 0 ||
+           name.compare("b") == 0 ||
+           name.compare("satpsi") == 0 ||
+           name.compare("quartz") == 0)
     return "node";
-  else if (name.compare("soil_moisture_profile") == 0 || name.compare("soil_temperature_profile") == 0)
+  else if (name.compare("soil_moisture_profile") == 0 ||
+           name.compare("soil_temperature_profile") == 0)
     return "node";
-  else
-    return "";
+  else {
+    std::string errMsg = "Variable " + name + " does not exist";
+    LOG(LogLevel::FATAL, errMsg);
+    throw std::runtime_error(errMsg);
+  }
 }
 
 
@@ -213,7 +238,7 @@ GetGridShape(const int grid, int *shape)
 void BmiSoilFreezeThaw::
 GetGridSpacing (const int grid, double * spacing)
 {
-  if (grid == 0) {
+  if (grid == 2) {
     spacing[0] = this->state->spacing[0];
   }
 }
@@ -222,7 +247,7 @@ GetGridSpacing (const int grid, double * spacing)
 void BmiSoilFreezeThaw::
 GetGridOrigin (const int grid, double *origin)
 {
-  if (grid == 0) {
+  if (grid == 2) {
     origin[0] = this->state->origin[0];
   }
 }
@@ -231,7 +256,9 @@ GetGridOrigin (const int grid, double *origin)
 int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
-  if (grid == 0 || grid == 1 || grid == 2)
+  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
+    return 0;
+  else if (grid == 2)
     return 1;
   else
     return -1;
@@ -253,16 +280,19 @@ GetGridSize(const int grid)
     return -1;
 }
 
-
 std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
-  if (grid == 0)
+  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
+    return "scalar";
+  else if (grid == 2)
     return "uniform_rectilinear";
-  else
-    return "";
+  else {
+    std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
+    LOG(LogLevel::FATAL, errMsg);
+    throw std::runtime_error(errMsg);
+  }
 }
-
 
 void BmiSoilFreezeThaw::
 GetGridX(const int grid, double *x)
@@ -291,7 +321,7 @@ GetGridZ(const int grid, double *z)
 int BmiSoilFreezeThaw::
 GetGridNodeCount(const int grid)
 {
-  if (grid == 0)
+  if (grid == 2)
     return this->state->shape[0];
   else
     return -1;
@@ -342,6 +372,8 @@ GetValuePtr (std::string name)
     return (void*)(&this->state->b);
   else if (name.compare("satpsi") == 0)
     return (void*)(&this->state->satpsi);
+  else if (name.compare("quartz") == 0)
+    return (void*)(&this->state->quartz);
   else if (name.compare("serialization_state") == 0)
     return (void*)(this->m_serialized_vec.data());
   else if (name.compare("serialization_size") == 0) {
