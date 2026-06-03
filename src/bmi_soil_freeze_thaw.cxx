@@ -40,12 +40,14 @@ BmiSoilFreezeThaw::BmiSoilFreezeThaw() : m_serialized_vec{} {
 void BmiSoilFreezeThaw::
 Initialize (std::string config_file)
 {
-  // Initialize the Error, Warning and Trapping System
-#ifdef EWTS_HAVE_NGEN_BRIDGE    
+#ifdef SFT_USE_EWTS    
+  // Initialize the Error and Warning Trapping System
+  #pragma message("SoilFreezeThaw.bmi_soil_freeze_thaw.Initialize: SFT_USE_EWTS ON")
   EwtsInit(SFT_MODULE_ID, true);
 #else
-  EwtsInit(SFT_MODULE_ID, false);
+  #pragma message("SoilFreezeThaw.bmi_soil_freeze_thaw.Initialize: SFT_USE_EWTS OFF")
 #endif
+
   LOG(LogLevel::INFO, "Initializing SFT");
 
   if (config_file.compare("") != 0 )
