@@ -113,17 +113,24 @@ set_target_properties(sftbmi PROPERTIES PUBLIC_HEADER ./include/bmi_soil_freeze_
 
 target_link_libraries(sftbmi PRIVATE Boost::serialization)
 
-# --- EWTS (installed from nwm-ewts) ---
-find_package(ewts CONFIG REQUIRED)
+option(USE_EWTS "Build SFT with EWTS logging" ON)
+message("-- SFT CMakeLists USE_EWTS = ${USE_EWTS}")
+if(USE_EWTS)
+    message("-- SFT compiled with EWTS logging")
 
-# Always use EWTS runtime logger for CPP
-target_link_libraries(sftbmi PRIVATE ewts::ewts_cpp)
+    # --- EWTS (installed from nwm-ewts) ---
+    find_package(ewts CONFIG REQUIRED)
 
-# Built with ngen bridge
-target_link_libraries(sftbmi PRIVATE 
-    "-Wl,--no-as-needed" ewts::ewts_ngen_bridge "-Wl,--as-needed")
-target_compile_definitions(sftbmi PRIVATE EWTS_HAVE_NGEN_BRIDGE)
+    # Always use EWTS runtime logger for CPP
+    target_link_libraries(sftbmi PRIVATE ewts::ewts_cpp)
 
+    # Built with ngen bridge
+    target_link_libraries(sftbmi PRIVATE 
+        "-Wl,--no-as-needed" ewts::ewts_ngen_bridge "-Wl,--as-needed")
+    target_compile_definitions(sftbmi PRIVATE SFT_USE_EWTS)
+else()
+    message("-- SFT compiled with stdout fallback logging")
+endif()
 
 include(GNUInstallDirs)
 
