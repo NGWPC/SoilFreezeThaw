@@ -50,9 +50,10 @@ Initialize (std::string config_file)
 
   LOG(LogLevel::INFO, "Initializing SFT");
 
-  if (config_file.compare("") != 0 ) {
+  if (config_file.compare("") != 0 )
+  {
       this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
-      verbosity= this->state->verbosity;
+    verbosity= this->state->verbosity;
   }
 }
 
@@ -61,6 +62,7 @@ Update()
 {
   this->state->Advance();
 }
+
 
 void BmiSoilFreezeThaw::
 UpdateUntil(double t)

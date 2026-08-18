@@ -342,10 +342,20 @@ int main(int argc, char *argv[])
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_rank()
+    int grid_rank_test[] = {0, 0, 1};
+
     grid_rank = model.GetGridRank(grid_id[i]);
-    if (grid_rank == 0) return FAILURE;
+
+    if (grid_rank != grid_rank_test[i]) {
+        std::stringstream errMsg;
+        errMsg << "Grid " << grid_id[i]
+               << " rank should be " << grid_rank_test[i]
+               << " but was " << grid_rank << "\n";
+        throw std::runtime_error(errMsg.str());
+    }
+
     if (VERBOSITY)
-      std::cout<<" rank: "<<grid_rank<<"\n";
+        std::cout << " rank: " << grid_rank << "\n";
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Test get_grid_size
