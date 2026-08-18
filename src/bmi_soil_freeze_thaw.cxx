@@ -64,31 +64,37 @@ Update()
 }
 
 
+#include <cmath>
+
 void BmiSoilFreezeThaw::
 UpdateUntil(double t)
 {
-  double time;
-  double dt;
+  double time = this->GetCurrentTime();
+  double dt = this->GetTimeStep();
+  double n_steps = (t - time) / dt;
 
-  time = this->GetCurrentTime();
-  dt = this->GetTimeStep();
+  double rounded = std::round(n_steps);
+  int full_steps;
+  double frac;
 
-  {
-    double n_steps = (t - time) / dt;
-    double frac;
+  // Snap values that are within floating-point noise of an
+  // integer number of timesteps.
+  if (std::fabs(n_steps - rounded) < 1e-9) {
+    full_steps = int(rounded);
+    frac = 0.0;
+  }
+  else {
+    full_steps = int(n_steps);
+    frac = n_steps - full_steps;
+  }
 
-    for (int n = 0; n < int(n_steps); n++)
-      this->Update();
+  for (int n = 0; n < full_steps; n++)
+    this->Update();
 
-    frac = n_steps - int(n_steps);
-
-    // Only perform a fractional advance when there is
-    // actually a fractional timestep remaining.
-    if (frac > 0.0) {
-      this->state->dt = frac * dt;
-      this->state->Advance();
-      this->state->dt = dt;
-    }
+  if (frac > 0.0) {
+    this->state->dt = frac * dt;
+    this->state->Advance();
+    this->state->dt = dt;
   }
 }
 
