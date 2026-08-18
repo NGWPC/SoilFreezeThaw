@@ -17,7 +17,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 
-BmiSoilFreezeThaw::BmiSoilFreezeThaw() : m_serialized_vec{} {
+BmiSoilFreezeThaw::BmiSoilFreezeThaw() : state(nullptr), m_serialized_vec{} {
   this->input_var_names[0]  = "ground_temperature";
   this->input_var_names[1]  = "soil_moisture_profile";
  
@@ -287,9 +287,11 @@ GetGridSize(const int grid)
 std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
-  if (grid == 0)
+  if (grid == 0 || grid == 1)
+    return "scalar";
+  else if (grid == 2)
     return "uniform_rectilinear";
-  else if (grid == 1 || grid == 2 || grid == 3 || grid == 4)
+  else if (grid == 3 || grid == 4)
     return "scalar";
   else {
     std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
