@@ -17,7 +17,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 
-BmiSoilFreezeThaw::BmiSoilFreezeThaw() : m_serialized_vec{} {
+BmiSoilFreezeThaw::BmiSoilFreezeThaw() : state(nullptr), m_serialized_vec{} {
   this->input_var_names[0]  = "ground_temperature";
   this->input_var_names[1]  = "soil_moisture_profile";
  
@@ -51,9 +51,10 @@ Initialize (std::string config_file)
   LOG(LogLevel::INFO, "Initializing SFT");
 
   if (config_file.compare("") != 0 )
+  {
       this->state = new soilfreezethaw::SoilFreezeThaw(config_file);
-
     verbosity= this->state->verbosity;
+  }
 }
 
 void BmiSoilFreezeThaw::
@@ -63,29 +64,39 @@ Update()
 }
 
 
+#include <cmath>
+
 void BmiSoilFreezeThaw::
 UpdateUntil(double t)
 {
-  double time;
-  double dt;
+  double time = this->GetCurrentTime();
+  double dt = this->GetTimeStep();
+  double n_steps = (t - time) / dt;
 
-  time = this->GetCurrentTime();
-  dt = this->GetTimeStep();
+  double rounded = std::round(n_steps);
+  int full_steps;
+  double frac;
 
-  {
-    double n_steps = (t - time) / dt;
-    double frac;
+  // Snap values that are within floating-point noise of an
+  // integer number of timesteps.
+  if (std::fabs(n_steps - rounded) < 1e-9) {
+    full_steps = int(rounded);
+    frac = 0.0;
+  }
+  else {
+    full_steps = int(n_steps);
+    frac = n_steps - full_steps;
+  }
 
-    for (int n=0; n<int(n_steps); n++)
-      this->Update();
+  for (int n = 0; n < full_steps; n++)
+    this->Update();
 
-    frac = n_steps - int(n_steps);
+  if (frac > 0.0) {
     this->state->dt = frac * dt;
     this->state->Advance();
     this->state->dt = dt;
   }
 }
-
 
 void BmiSoilFreezeThaw::
 Finalize()
@@ -171,8 +182,7 @@ GetVarUnits(std::string name)
     return "K";
   else if (name.compare("ground_heat_flux") == 0)
     return "W m-2";
-  else if (name.compare("ice_fraction_schaake") == 0 ||
-           name.compare("ice_fraction_xinanjiang") == 0 ||
+  else if (name.compare("ice_fraction_xinanjiang") == 0 ||
            name.compare("soil_ice_fraction") == 0 ||
            name.compare("soil_moisture_profile") == 0 ||
            name.compare("ice_fraction_scheme_bmi") == 0 ||
@@ -180,7 +190,7 @@ GetVarUnits(std::string name)
            name.compare("b") == 0 ||
            name.compare("quartz") == 0)
     return "1"; // UDUNITS dimensionless
-  else if (name.compare("satpsi") == 0)
+  else if (name.compare("ice_fraction_schaake") == 0 || name.compare("satpsi") == 0)
     return "m";
   else
     return "none";
@@ -254,16 +264,16 @@ GetGridOrigin (const int grid, double *origin)
   }
 }
 
-
 int BmiSoilFreezeThaw::
 GetGridRank(const int grid)
 {
-  if (grid == 0 || grid == 1 || grid == 2 || grid == 3 || grid == 4)
+  if (grid == 0 || grid == 1 || grid == 3 || grid == 4)
+    return 0;
+  else if (grid == 2)
     return 1;
   else
     return -1;
 }
-
 
 int BmiSoilFreezeThaw::
 GetGridSize(const int grid)
@@ -283,9 +293,11 @@ GetGridSize(const int grid)
 std::string BmiSoilFreezeThaw::
 GetGridType(const int grid)
 {
-  if (grid == 0)
+  if (grid == 0 || grid == 1)
+    return "scalar";
+  else if (grid == 2)
     return "uniform_rectilinear";
-  else if (grid == 1 || grid == 2 || grid == 3 || grid == 4)
+  else if (grid == 3 || grid == 4)
     return "scalar";
   else {
     std::string errMsg = "Grid " + std::to_string(grid) + " does not exist";
