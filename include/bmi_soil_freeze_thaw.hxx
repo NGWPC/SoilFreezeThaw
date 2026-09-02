@@ -73,7 +73,7 @@ class BmiSoilFreezeThaw : public bmi::Bmi {
   private:
     friend class boost::serialization::access;
     soilfreezethaw::SoilFreezeThaw* state;
-    vecbuf<char> m_serialized_vec;
+    vecbuf m_serialized_vec;
     uint64_t m_serialized_length; // can theoretically always be derived from the vec's size, but needed for having a stable location for GetValuePtr
     static const int input_var_name_count  = 2;
     static const int output_var_name_count = 6;

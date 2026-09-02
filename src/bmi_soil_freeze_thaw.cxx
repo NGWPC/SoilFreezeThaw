@@ -648,18 +648,26 @@ serialize(Archive& ar, const unsigned int version) {
   ar & state->ncells;
 }
 
+namespace {
+  using HeaderType = uint32_t;
+}
 
 void BmiSoilFreezeThaw::
 new_serialized() {
   // resize to reserve space for the serialized size as a header
-  this->m_serialized_vec.resize(sizeof(uint64_t));
-  boost::archive::binary_oarchive archive(this->m_serialized_vec);
+  this->m_serialized_vec.clear();
+  OStreamType stream(this->m_serialized_vec);
+  // make room for header
+  HeaderType serialized_size;
+  stream.write(reinterpret_cast<const char*>(&serialized_size), sizeof(HeaderType));
+  boost::archive::binary_oarchive archive(stream);
   try {
     archive << (*this);
+    stream.flush();
     this->m_serialized_length = this->m_serialized_vec.size();
     // copy size of serialized data to the beginning as a header
-    uint64_t serialized_size = this->m_serialized_length - sizeof(uint64_t);
-    memcpy(this->m_serialized_vec.data(), &serialized_size, sizeof(uint64_t));
+    serialized_size = this->m_serialized_length - sizeof(HeaderType);
+    memcpy(this->m_serialized_vec.data(), &serialized_size, sizeof(HeaderType));
   } catch (const std::exception &e) {
     LOG(LogLevel::SEVERE, "Serializing SFT encountered an error: %s", e.what());
     this->m_serialized_length = 0;
@@ -671,10 +679,10 @@ new_serialized() {
 void BmiSoilFreezeThaw::
 load_serialized(char* data) {
   // pull data size from header of raw data ptr
-  uint64_t size;
-  memcpy(&size, data, sizeof(uint64_t));
+  HeaderType size;
+  memcpy(&size, data, sizeof(HeaderType));
   // create stream from after the size header
-  membuf stream(data + sizeof(uint64_t), size);
+  membuf stream(data + sizeof(HeaderType), size);
   boost::archive::binary_iarchive archive(stream);
   try {
     archive >> (*this);
